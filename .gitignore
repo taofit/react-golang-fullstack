@@ -1,0 +1,75 @@
+# -----------------------------
+# General
+# -----------------------------
+.DS_Store
+Thumbs.db
+*.log
+.env
+.env.local
+.env.*.local
+*.tmp
+*.bak
+*.swp
+*~
+
+# -----------------------------
+# Go (backend)
+# -----------------------------
+/backend/main                  # Compiled Go binary
+/backend/*.prof                # Go profiling files
+
+# Go module cache (if downloaded locally)
+/go/
+/pkg/
+/bin/
+
+# -----------------------------
+# Node.js / React (frontend) - npm only
+# -----------------------------
+/frontend/node_modules/        # npm dependencies
+
+# Build outputs
+/frontend/build/
+/frontend/dist/
+/frontend/out/
+
+/public/build/                 # Upsun React build output (generated on deploy)
+
+# Testing
+/frontend/coverage/
+
+# Vite specific (if using Vite)
+/frontend/.vite/
+
+# Create React App specific
+/frontend/.cache/
+
+# TypeScript
+/frontend/*.tsbuildinfo
+
+# -----------------------------
+# Docker
+# -----------------------------
+docker-compose.override.yml
+.docker/
+
+# -----------------------------
+# Upsun / Platform.sh
+# -----------------------------
+.upsun/
+.platform/
+.platform.app.yaml
+
+# -----------------------------
+# IDE / Editor
+# -----------------------------
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# -----------------------------
+# Assignment artefacts (optional)
+# -----------------------------
+# Remove the line below if you plan to commit your AI chat export PDF
+docs/ai-chats.pdf
