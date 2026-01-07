@@ -26,7 +26,7 @@ Thumbs.db
 # -----------------------------
 # Node.js / React (frontend) - npm only
 # -----------------------------
-/frontend/node_modules/        # npm dependencies
+node_modules
 
 # Build outputs
 /frontend/build/

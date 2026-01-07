@@ -1,0 +1,12 @@
+Instructions
+- start frontend: `npm run dev`
+- start backend: `go run ./cmd/main/main.go`
+- start all: `docker-compose up --build`
+- stop all: `docker-compose down`
+- stop backend: `docker-compose stop backend`
+- stop frontend: `docker-compose stop frontend`
+- stop db: `docker-compose stop db`
+- stop all: `docker-compose down`
+- stop backend: `docker-compose stop backend`
+- stop frontend: `docker-compose stop frontend`
+- stop db: `docker-compose stop db`
