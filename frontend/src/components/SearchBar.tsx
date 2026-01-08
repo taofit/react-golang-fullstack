@@ -1,30 +1,54 @@
-import { useState } from 'react'
-import { Autocomplete, TextField } from '@mui/material'
-import { useNavigate } from 'react-router-dom'
-
-const mockSuggestions = ['FIFA 23', 'GTA V', 'Split Fiction', 'Call of Duty']
+import { useState } from 'react';
+import { InputAdornment, TextField } from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
+import { useNavigate } from 'react-router-dom';
 
 export default function SearchBar() {
-  const [value, setValue] = useState<string | null>(null)
-  const navigate = useNavigate()
+  const [value, setValue] = useState('');
+  const navigate = useNavigate();
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (value.trim()) {
+      navigate(`/list?search=${encodeURIComponent(value.trim())}`);
+    }
+  };
 
   return (
-    <Autocomplete
-      freeSolo
-      options={mockSuggestions}
-      value={value}
-      onChange={(_, newValue) => {
-        if (newValue) navigate(`/list?search=${encodeURIComponent(newValue)}`)
-      }}
-      renderInput={(params) => (
-        <TextField
-          {...params}
-          label="Search games (e.g. fffa → fifa)"
-          variant="outlined"
-          fullWidth
-          sx={{ mb: 4, bgcolor: 'background.paper' }}
-        />
-      )}
-    />
-  )
+    <form onSubmit={handleSubmit} style={{ width: '100%' }}>
+      <TextField
+        fullWidth
+        variant="outlined"
+        placeholder="Search games..."
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <SearchIcon sx={{ color: '#999' }} />
+            </InputAdornment>
+          ),
+          sx: {
+            bgcolor: '#4618ac',           // Light gray background (matches Eneba)
+            '& .MuiOutlinedInput-notchedOutline': {
+              borderColor: '#fff',
+            },
+            '&:hover .MuiOutlinedInput-notchedOutline': {
+              borderColor: '#fff',
+            },
+            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+              borderColor: '#fff',
+              borderWidth: 2,
+            },
+          },
+        }}
+        sx={{
+          '& .MuiInputBase-input': {
+            py: 1.5,
+            fontSize: '1rem',
+          },
+        }}
+      />
+    </form>
+  );
 }

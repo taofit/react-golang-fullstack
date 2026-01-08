@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { CircularProgress, Box } from '@mui/material';
 import GameGrid from '../components/GameGrid';
 import type { Game } from '../types';
 // import api from '../api/games'; // later
@@ -129,10 +130,17 @@ const mockGames: Game[] = [
 
 export default function GameList() {
   const [games, setGames] = useState<Game[]>([]);
+  const [loading, setLoading] = useState(true);
   const [favourites, setFavourites] = useState<Set<number>>(new Set());
 
   useEffect(() => {
-    setGames(mockGames); // Replace with real API later
+    // Simulate API delay
+    const timer = setTimeout(() => {
+      setGames(mockGames);
+      setLoading(false);
+    }, 1500);
+
+    return () => clearTimeout(timer);
   }, []);
 
   const toggleFavourite = (id: number) => {
@@ -146,7 +154,13 @@ export default function GameList() {
 
   return (
     <>
-      <GameGrid games={games} favourites={favourites} onToggleFavourite={toggleFavourite} />
+      {loading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+          <CircularProgress color="secondary" />
+        </Box>
+      ) : (
+        <GameGrid games={games} favourites={favourites} onToggleFavourite={toggleFavourite} />
+      )}
       {/* Pagination component here later */}
     </>
   );
