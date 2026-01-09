@@ -1,9 +1,19 @@
 import { useState, useEffect } from 'react';
-import { CircularProgress, Box } from '@mui/material';
+import { useSearchParams } from 'react-router-dom';
+import { Box, CircularProgress } from '@mui/material';
 import GameGrid from '../components/GameGrid';
+import PaginationControls from '../components/Pagination';
+import * as api from '../api/game';
 import type { Game } from '../types';
-// import api from '../api/games'; // later
 
+interface ApiResponse {
+  games: Game[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+  };
+}
 const mockGames: Game[] = [
   {
     id: 1,
@@ -125,43 +135,136 @@ const mockGames: Game[] = [
     priceUsd: 59.99,
     coverUrl: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co6x9z.jpg',
   },
-  // Add 12–20 more for testing...
+  {
+    id: 21,
+    name: 'Elden Ring',
+    priceUsd: 59.99,
+    coverUrl: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co4jni.jpg',
+  },
+  {
+    id: 22,
+    name: 'Cyberpunk 2077',
+    priceUsd: 29.99,
+    coverUrl: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co2mdf.jpg',
+  },
+  {
+    id: 23,
+    name: 'The Witcher 3: Wild Hunt',
+    priceUsd: 39.99,
+    coverUrl: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co1wyy.jpg',
+  },
+  {
+    id: 24,
+    name: 'Red Dead Redemption 2',
+    priceUsd: 59.99,
+    coverUrl: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co1q1f.jpg',
+  },
+  {
+    id: 25,
+    name: 'God of War',
+    priceUsd: 19.99,
+    coverUrl: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co1r7h.jpg',
+  },
+  {
+    id: 26,
+    name: 'Horizon Forbidden West',
+    priceUsd: 69.99,
+    coverUrl: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co2v76.jpg',
+  },
+  {
+    id: 27,
+    name: "Marvel's Spider-Man",
+    priceUsd: 39.99,
+    coverUrl: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co1r77.jpg',
+  },
+  {
+    id: 28,
+    name: 'Ghost of Tsushima',
+    priceUsd: 59.99,
+    coverUrl: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co27v1.jpg',
+  },
+  {
+    id: 29,
+    name: 'Resident Evil Village',
+    priceUsd: 39.99,
+    coverUrl: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co2uk8.jpg',
+  },
+  {
+    id: 30,
+    name: 'Final Fantasy VII Remake',
+    priceUsd: 69.99,
+    coverUrl: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co1vcf.jpg',
+  },
+
 ];
 
 export default function GameList() {
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Get query params
+  const search = searchParams.get('search') || '';
+  const page = Number(searchParams.get('page')) || 1;
+  const limit = 20; // Fixed limit, or make it configurable
+
   const [games, setGames] = useState<Game[]>([]);
+  const [totalGames, setTotalGames] = useState(0);
   const [loading, setLoading] = useState(true);
   const [favourites, setFavourites] = useState<Set<number>>(new Set());
 
+  const totalPages = Math.ceil(totalGames / limit);
+
   useEffect(() => {
-    // Simulate API delay
-    const timer = setTimeout(() => {
-      setGames(mockGames);
-      setLoading(false);
-    }, 1500);
+    const fetchGames = async () => {
+      setLoading(true);
+      try {
+        // const res = await api.fetchGames(page, limit, search || undefined);
+        // setGames(res.games);
+        // setTotalGames(res.pagination.total);
+        setGames(mockGames);
+        setTotalGames(mockGames.length);
+      } catch (err) {
+        console.error('Failed to fetch games', err);
+        setGames([]);
+        setTotalGames(0);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    return () => clearTimeout(timer);
-  }, []);
+    fetchGames();
+  }, [search, page]);
 
-  const toggleFavourite = (id: number) => {
-    setFavourites(prev => {
+  const handlePageChange = (newPage: number) => {
+    setSearchParams({ search, page: newPage.toString() }, { replace: true });
+    window.scrollTo(0, 0); // Scroll to top on page change
+  };
+
+  const toggleFavourite = (gameId: number) => {
+    setFavourites((prev) => {
       const newSet = new Set(prev);
-      if (newSet.has(id)) newSet.delete(id);
-      else newSet.add(id);
+      newSet.has(gameId) ? newSet.delete(gameId) : newSet.add(gameId);
       return newSet;
     });
   };
 
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}>
+        <CircularProgress color="primary" size={60} />
+      </Box>
+    );
+  }
+
   return (
     <>
-      {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-          <CircularProgress color="secondary" />
-        </Box>
-      ) : (
-        <GameGrid games={games} favourites={favourites} onToggleFavourite={toggleFavourite} />
-      )}
-      {/* Pagination component here later */}
+      <GameGrid games={games} favourites={favourites} onToggleFavourite={toggleFavourite} />
+
+      <PaginationControls
+        page={page}
+        totalPages={totalPages}
+        totalGames={totalGames}
+        onPageChange={handlePageChange}
+      />
     </>
   );
 }

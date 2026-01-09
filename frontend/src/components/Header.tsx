@@ -1,4 +1,3 @@
-// src/components/Header.tsx
 import { AppBar, Toolbar, Box, IconButton, Badge, Typography, Container } from '@mui/material';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
@@ -6,13 +5,22 @@ import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined
 import SearchBar from './SearchBar';
 import SettingsDialog from './SettingsDialog';
 import { useState } from 'react';
+import CartPopup from './CartPopup';
 
 export default function Header() {
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [cartAnchor, setCartAnchor] = useState<null | HTMLElement>(null);
 
+  const handleCartHover = (e: React.MouseEvent<HTMLElement> | React.FocusEvent<HTMLElement>) => {
+    setCartAnchor(e.currentTarget);
+  };
+
+  const handleCartLeave = () => {
+    setCartAnchor(null);
+  };
   return (
     <>
-    <AppBar position="static" sx={{ bgcolor: '#4a148c', py: 1 }}>
+    <AppBar position="static" sx={{ bgcolor: '#4618ac', py: 1 }}>
       <Container maxWidth="xl">
         <Toolbar sx={{ justifyContent: 'space-between', gap: 2 }} disableGutters>
           {/* Logo */}
@@ -54,11 +62,16 @@ export default function Header() {
             </IconButton>
 
             {/* Cart */}
-            <IconButton color="inherit">
+            <IconButton 
+              color="inherit"
+              onClick={handleCartHover}
+              onFocus={handleCartHover}
+            >
               <Badge badgeContent={3} color="secondary">
                 <ShoppingCartOutlinedIcon sx={{ color: 'white' }} />
               </Badge>
             </IconButton>
+            <CartPopup anchorEl={cartAnchor} onClose={handleCartLeave} />
 
             {/* Profile */}
             <IconButton color="inherit">

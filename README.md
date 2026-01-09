@@ -10,6 +10,10 @@ Instructions
 - stop backend: `docker-compose stop backend`
 - stop frontend: `docker-compose stop frontend`
 - stop db: `docker-compose stop db`
+- start the backend only: `docker-compose up --build backend`
+- start the database only: `docker-compose up --build db`
+- start both backend and database: `docker compose up -d db backend`
+- check the logs: `docker-compose logs -f backend`
 
 ## project structure
 - backend: `./backend`

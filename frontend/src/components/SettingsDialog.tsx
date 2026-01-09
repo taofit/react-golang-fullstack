@@ -1,4 +1,3 @@
-// src/components/SettingsDialog.tsx
 import {
   Dialog,
   DialogTitle,
@@ -19,7 +18,14 @@ interface SettingsDialogProps {
   onClose: () => void;
 }
 
-const regions = ['Sweden', 'Germany', 'Spain', 'France', 'Italy', 'United Kingdom'];
+const regions = [
+  { label: 'Sweden', flag: '🇸🇪' },
+  { label: 'Germany', flag: '🇩🇪' },
+  { label: 'Spain', flag: '🇪🇸' },
+  { label: 'France', flag: '🇫🇷' },
+  { label: 'Italy', flag: '🇮🇹' },
+  { label: 'United Kingdom', flag: '🇬🇧' },
+];
 const languages = ['English EU', 'Deutsch EU', 'Español EU', 'Français EU', 'Italiano EU'];
 const currencies = ['Swedish Krona (SEK)', 'Euro (€)', 'US Dollar ($)', 'British Pound (£)'];
 
@@ -49,9 +55,9 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
         <FormControl fullWidth sx={{ mb: 3 }}>
           <InputLabel>Region</InputLabel>
           <Select value={region} onChange={(e) => setRegion(e.target.value)} label="Region">
-            {regions.map((r) => (
-              <MenuItem key={r} value={r}>
-                {r === 'Sweden' ? '🇸🇪 Sweden' : r}
+            {regions.map((region) => (
+              <MenuItem key={region.label} value={region.label}>
+                {region.flag} {region.label}
               </MenuItem>
             ))}
           </Select>
