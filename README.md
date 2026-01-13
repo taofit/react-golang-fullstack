@@ -8,6 +8,11 @@ A modern web application for finding games with synonym-powered search and IGDB 
 - [Docker](https://www.docker.com/products/docker-desktop/) & Docker Compose installed.
 - IGDB Credentials (from [Twitch Developers](https://dev.twitch.tv/console)).
 
+## ✨ Implemented Optional Requirements
+- **Detail Page**: Comprehensive game details fetched dynamicallly from the database.
+- **Fuzzy Autocompletion**: Real-time suggestions that handle typos and partial matches using `pg_trgm`.
+- **Synonym Autocompletion**: Search for games using common synonyms (e.g., "GTA" for "Grand Theft Auto").
+
 ### 2. Configuration
 Create a `.env` file in the `backend/` directory:
 ```env
