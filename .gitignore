@@ -56,9 +56,9 @@ docker-compose.override.yml
 # -----------------------------
 # Upsun / Platform.sh
 # -----------------------------
-.upsun/
-.platform/
-.platform.app.yaml
+# .upsun/
+# .platform/
+# .platform.app.yaml
 
 # -----------------------------
 # IDE / Editor

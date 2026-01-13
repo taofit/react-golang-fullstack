@@ -31,26 +31,37 @@ func ListGames(c *gin.Context) {
 
 func GetGame(c *gin.Context) {
 	id := c.Param("id")
-	c.JSON(http.StatusOK, gin.H{"id": id, "title": "Stub Game"})
+	idInt, _ := strconv.Atoi(id)
+	game, err := db.GetGame(idInt)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, game)
 }
 
 func Autocomplete(c *gin.Context) {
 	query := c.Query("q")
 	if len(query) < 2 { //no point querying the short query
-		c.JSON(http.StatusOK, gin.H{"suggestions": []string{"Stub 1", "Stub 2"}})
+		c.JSON(http.StatusOK, []string{"Stub 1", "Stub 2"})
 		return
 	}
-	var suggestions []string
+	suggestions := []string{}
 	err := db.DB.Select(&suggestions, `
-		SELECT DISTINCT name
+		SELECT name
 		FROM games
 		LEFT JOIN game_synonyms ON games.id = game_synonyms.game_id
-		WHERE (name % $1 AND similarity(name, $1) > 0.3) OR (synonym % $1 AND similarity(synonym, $1) > 0.3)
-		ORDER BY GREATEST(similarity(name, $1), similarity(synonym, $1)) DESC
+		WHERE (name % $1 AND similarity(name, $1) > 0.3) 
+		OR (synonym % $1 AND similarity(synonym, $1) > 0.3)
+		GROUP BY name
+		ORDER BY MAX(GREATEST(
+			CASE WHEN name % $1 THEN similarity(name, $1) ELSE 0 END,
+			CASE WHEN synonym % $1 THEN similarity(synonym, $1) ELSE 0 END
+		)) DESC
 		LIMIT 10`, query)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"suggestions": suggestions})
+	c.JSON(http.StatusOK, suggestions)
 }

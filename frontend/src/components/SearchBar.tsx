@@ -11,9 +11,6 @@ export default function SearchBar() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Get current search from URL (so it stays when navigating)
-  // const currentSearch = new URLSearchParams(location.search).get('search') || '';
-
   // Debounced fetch — only call API after user stops typing for 300ms
   const debouncedFetch = debounce(async (query: string) => {
     if (query.length < 2) {
@@ -56,6 +53,7 @@ export default function SearchBar() {
       onInputChange={handleInputChange}
       onChange={handleSubmit} // Submit on select
       loading={loading}
+      filterOptions={(x) => x} // Critical: Disable client-side filtering for server-side search
       noOptionsText="Type to search games..."
       renderInput={(params) => (
         <TextField

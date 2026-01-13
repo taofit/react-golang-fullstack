@@ -25,3 +25,5 @@ CREATE TABLE IF NOT EXISTS favourites (
 CREATE TABLE IF NOT EXISTS game_synonyms (
     game_id INTEGER REFERENCES games(id) ON DELETE CASCADE,
     synonym TEXT NOT NULL,
+    UNIQUE (game_id, synonym)
+);

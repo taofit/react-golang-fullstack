@@ -26,6 +26,7 @@ export default function GameDetails() {
         setLoading(true);
         setError(false);
         const data = await fetchGameById(Number(id));
+        console.log('game data: ',data);
         setGame(data || null);
       } catch (err) {
         console.error('Failed to load game', err);

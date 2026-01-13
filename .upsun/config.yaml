@@ -1,0 +1,46 @@
+applications:
+  backend:
+    source:
+      root: backend
+    type: golang:1.25
+    relationships:
+      database: "db:postgresql"
+    web:
+      commands:
+        start: ./bin/app
+    hooks:
+      build: |
+        mkdir -p bin
+        go build -v -o bin/app ./cmd/main/main.go
+        go build -v -o bin/populate ./cmd/populate-igdb/main.go
+      deploy: |
+        ./bin/populate
+  
+  frontend:
+    source:
+      root: frontend
+    type: nodejs:20
+    web:
+      locations:
+        "/":
+          root: "dist"
+          index: ["index.html"]
+          scripts: false
+          allow: true
+          passthrough: "/index.html"
+    hooks:
+      build: |
+        npm install
+        npm run build
+
+services:
+  db:
+    type: postgresql:16
+
+routes:
+  "https://{default}/api":
+    type: upstream
+    upstream: "backend:http"
+  "https://{default}/":
+    type: upstream
+    upstream: "frontend:http"

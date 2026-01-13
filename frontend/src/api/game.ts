@@ -226,9 +226,9 @@ export const fetchGames = async (
 };
 
 export const fetchGameById = async (id: number): Promise<Game | undefined> => {
-//   const response = await api.get<Game>(`/game/${id}`);
-//   return response.data;
-    return mockGames.find((game) => game.id === id);
+  const response = await api.get<Game>(`/api/game/${id}`);
+  return response.data;
+    // return mockGames.find((game) => game.id === id);
 };
 
 export const fetchAutocompleteSuggestions = async (query: string): Promise<string[]> => {

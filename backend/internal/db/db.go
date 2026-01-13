@@ -42,10 +42,10 @@ func ListGames(page, limit int, search string) ([]models.Game, int, error) {
 
 	if search != "" {
 		query = `
-		SELECT id, name, summary, cover_url, price_usd, similarity(name, $1) AS sim
+		SELECT id, name, summary, cover_url, price_usd
 		FROM games 
 		WHERE name % $1 AND similarity(name, $1) > 0.4 
-		ORDER BY sim DESC
+		ORDER BY similarity(name, $1) DESC
 		LIMIT $2 OFFSET $3`
 		countQuery = `SELECT COUNT(*) FROM games WHERE name % $1 AND similarity(name, $1) > 0.4`
 		queryArgs = []interface{}{search, limit, offset}
@@ -68,4 +68,13 @@ func ListGames(page, limit int, search string) ([]models.Game, int, error) {
 	}
 
 	return games, count, nil
+}
+
+func GetGame(id int) (models.Game, error) {
+	var game models.Game
+	err := DB.Get(&game, "SELECT id, name, summary, cover_url, price_usd FROM games WHERE id = $1", id)
+	if err != nil {
+		return game, err
+	}
+	return game, nil
 }
