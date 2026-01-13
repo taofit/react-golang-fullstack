@@ -22,7 +22,8 @@ type IGDBGame struct {
 	Name    string `json:"name"`
 	Summary string `json:"summary"`
 	Cover   struct {
-		URL string `json:"url"`
+		URL     string `json:"url"`
+		ImageID string `json:"image_id"`
 	} `json:"cover"`
 	PriceUsd float64 `json:"price_usd"`
 }
@@ -55,6 +56,14 @@ func main() {
 	err = initSchema(db)
 	if err != nil {
 		log.Fatal("Failed to initialize schema: ", err)
+	}
+
+	if os.Getenv("TRUNCATE_DB") == "true" {
+		log.Println("TRUNCATE_DB=true detected. Wiping games table...")
+		_, err = db.Exec("TRUNCATE games CASCADE;")
+		if err != nil {
+			log.Printf("Warning: Failed to truncate games: %v", err)
+		}
 	}
 
 	err = fetchAndInsertGames(db, accessToken.AccessToken, clientID)
@@ -91,7 +100,7 @@ func fetchAndInsertGames(db *sqlx.DB, accessToken string, clientID string) error
 	apiURL := "https://api.igdb.com/v4/games"
 
 	// IGDB v4 expects a text-based query body
-	query := "fields name, summary, cover.url; sort total_rating_count desc; limit 100;"
+	query := "fields name, summary, cover.url, cover.image_id; sort total_rating_count desc; limit 100;"
 
 	req, err := http.NewRequest("POST", apiURL, strings.NewReader(query))
 	if err != nil {
@@ -138,6 +147,9 @@ func fetchAndInsertGames(db *sqlx.DB, accessToken string, clientID string) error
 
 			if strings.HasPrefix(game.Cover.URL, "//") {
 				game.Cover.URL = "https:" + game.Cover.URL
+				if game.Cover.ImageID != "" {
+					game.Cover.URL = "https://images.igdb.com/igdb/image/upload/t_cover_big/" + game.Cover.ImageID + ".jpg"
+				}
 			}
 
 			var gameID int

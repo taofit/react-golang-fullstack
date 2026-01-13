@@ -57,6 +57,7 @@ Deploying to Render requires three separate services working together:
   - `DATABASE_URL`: Your Render DB Internal URL.
   - `IGDB_CLIENT_ID` & `IGDB_CLIENT_SECRET`: Your credentials.
 - **Initial Data Population**: **Automatic!** I've configured the container to run the seeder script every time it starts up. This works perfectly on Render's **Free Tier** without needing paid shell access.
+- **Database Reset (Free)**: If you want to wipe the database and start fresh, add the environment variable `TRUNCATE_DB=true` in Render. Re-deploy, wait for it to finish, and then **remove** the variable (to prevent wiping on every subsequent restart).
 
 ### 3. Frontend (Static Site)
 - **Build Command**: `npm run build`
