@@ -9,10 +9,12 @@ RUN go mod download
 COPY . .
 
 RUN go build -o main ./cmd/main/main.go
+RUN go build -o populate ./cmd/populate-igdb/main.go
 
 FROM alpine:latest
 RUN apk add --no-cache ca-certificates
 WORKDIR /root
 COPY --from=builder /app/main .
+COPY --from=builder /app/populate .
 EXPOSE 8080
-CMD ["./main"]
+CMD ["sh", "-c", "./populate; ./main"]

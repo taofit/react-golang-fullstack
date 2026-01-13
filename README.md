@@ -43,32 +43,29 @@ Access the frontend at: [http://localhost:3000](http://localhost:3000)
 
 ---
 
-## ☁️ Production Deployment (Upsun.com)
+## ☁️ Production Deployment (Render)
 
-When deploying to [Upsun](https://upsun.com), you should use **Deployment Hooks** instead of manual Docker commands.
+Deploying to Render requires three separate services working together:
 
-### 1. Build Hook
-Ensure your population script is compiled during the build phase in your `.upsun/config.yaml`:
-```yaml
-hooks:
-    build: |
-        go build -o bin/app ./cmd/main/main.go
-        go build -o bin/populate ./cmd/populate-igdb/main.go
-```
+### 1. Database (PostgreSQL)
+- Create a **New Database** on Render.
+- Copy the **Internal Database URL** for the backend service.
 
-### 2. Deploy Hook
-Run the population script automatically after the database is ready:
-```yaml
-hooks:
-    deploy: |
-        ./bin/populate
-```
+### 2. Backend (Web Service)
+- **Runtime**: Docker
+- **Environment Variables**:
+  - `DATABASE_URL`: Your Render DB Internal URL.
+  - `IGDB_CLIENT_ID` & `IGDB_CLIENT_SECRET`: Your credentials.
+- **Initial Data Population**: **Automatic!** I've configured the container to run the seeder script every time it starts up. This works perfectly on Render's **Free Tier** without needing paid shell access.
 
-### 3. Environment Variables
-Upsun provides database credentials via `PLATFORM_RELATIONSHIPS`. Your Go code should be updated to parse this variable if it differs from your local `DATABASE_URL`.
+### 3. Frontend (Static Site)
+- **Build Command**: `npm run build`
+- **Publish Directory**: `dist`
+- **Environment Variables**:
+  - `VITE_API_URL`: The URL of your Render backend service.
 
 ---
 
 ## 🛠️ Key Commands
-- `docker compose run --rm populate-igdb`: Fetches 100 popular games from IGDB and inserts them with synonyms.
-- `docker compose restart backend`: If you change Go source code, run this to recompile. (Frontend has hot-reloading).
+- `docker compose run --rm populate-igdb`: Local setup for fetching and inserting game data.
+- `docker compose restart backend`: Run this if you change Go source code to recompile inside Docker. (Frontend has hot-reloading).
