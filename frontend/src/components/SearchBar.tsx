@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Autocomplete, TextField, InputAdornment, CircularProgress } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { fetchAutocompleteSuggestions } from '../api/game';
 import debounce from 'lodash/debounce';
 
@@ -10,10 +10,9 @@ export default function SearchBar() {
   const [options, setOptions] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
 
   // Get current search from URL (so it stays when navigating)
-  const currentSearch = new URLSearchParams(location.search).get('search') || '';
+  // const currentSearch = new URLSearchParams(location.search).get('search') || '';
 
   // Debounced fetch — only call API after user stops typing for 300ms
   const debouncedFetch = debounce(async (query: string) => {

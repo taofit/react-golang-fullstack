@@ -21,5 +21,7 @@ CREATE TABLE IF NOT EXISTS favourites (
     game_id INTEGER REFERENCES games(id) ON DELETE CASCADE,
     PRIMARY KEY (user_id, game_id)
 );
--- Critical index for fast fuzzy search
-CREATE INDEX IF NOT EXISTS games_name_trgm_idx ON games USING GIN (name gin_trgm_ops);
+
+CREATE TABLE IF NOT EXISTS game_synonyms (
+    game_id INTEGER REFERENCES games(id) ON DELETE CASCADE,
+    synonym TEXT NOT NULL,

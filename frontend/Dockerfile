@@ -19,4 +19,4 @@ FROM nginx:alpine
 # Copy the built app from the builder stage
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-EXPOSE 80d
+EXPOSE 80

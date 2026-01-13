@@ -214,7 +214,6 @@ export const fetchGames = async (
   limit: number = 20,
   search?: string
 ): Promise<PaginationResponse> => {
-  // const endpoint = search ? '/list' : '/api/list';
   const endpoint = '/api/list';
   const params: Record<string, any> = { page, limit };
   
@@ -235,7 +234,7 @@ export const fetchGameById = async (id: number): Promise<Game | undefined> => {
 export const fetchAutocompleteSuggestions = async (query: string): Promise<string[]> => {
   if (!query.trim()) return [];
   
-  const response = await api.get<string[]>('/autocomplete', {
+  const response = await api.get<string[]>('/api/autocomplete', {
     params: { q: query },
   });
   return response.data;

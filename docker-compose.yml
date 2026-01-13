@@ -2,27 +2,28 @@ version: '3.9'
 
 services:
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+    image: golang:1.25-alpine
+    working_dir: /app
+    restart: always
     ports:
       - "8080:8080"
+    env_file:
+      - ./backend/.env
     environment:
       - DATABASE_URL=postgres://postgres:secret@db:5432/games?sslmode=disable
-      - PORT=8080
     depends_on:
       db:
         condition: service_healthy
     volumes:
-      - ./backend:/app/backend
-    command: go run ./cmd/main/main.go  # Hot reload optional with air
+      - ./backend:/app
+    command: go run ./cmd/main/main.go
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "3000:80"
     volumes:
       - ./frontend:/app/frontend
       - /app/frontend/node_modules
@@ -30,6 +31,20 @@ services:
       - CHOKIDAR_USEPOLLING=true
     depends_on:
       - backend
+      
+  populate-igdb:
+    image: golang:1.25-alpine
+    working_dir: /app
+    env_file:
+      - ./backend/.env
+    environment:
+      - DATABASE_URL=postgres://postgres:secret@db:5432/games?sslmode=disable
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+    command: go run ./cmd/populate-igdb/main.go
 
   db:
     image: postgres:16-alpine

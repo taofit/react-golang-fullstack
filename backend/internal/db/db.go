@@ -42,7 +42,7 @@ func ListGames(page, limit int, search string) ([]models.Game, int, error) {
 
 	if search != "" {
 		query = `
-		SELECT id, name, summary, "coverUrl", "priceUsd", similarity(name, $1) AS sim
+		SELECT id, name, summary, cover_url, price_usd, similarity(name, $1) AS sim
 		FROM games 
 		WHERE name % $1 AND similarity(name, $1) > 0.4 
 		ORDER BY sim DESC
@@ -51,7 +51,7 @@ func ListGames(page, limit int, search string) ([]models.Game, int, error) {
 		queryArgs = []interface{}{search, limit, offset}
 		getArgs = []interface{}{search}
 	} else {
-		query = `SELECT id, name, summary, "coverUrl", "priceUsd" FROM games LIMIT $1 OFFSET $2`
+		query = `SELECT id, name, summary, cover_url, price_usd FROM games LIMIT $1 OFFSET $2`
 		countQuery = `SELECT COUNT(*) FROM games`
 		queryArgs = []interface{}{limit, offset}
 		getArgs = []interface{}{}
