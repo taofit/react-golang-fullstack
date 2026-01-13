@@ -52,6 +52,11 @@ func main() {
 		log.Fatal("Failed to get access token: ", err)
 	}
 
+	err = initSchema(db)
+	if err != nil {
+		log.Fatal("Failed to initialize schema: ", err)
+	}
+
 	err = fetchAndInsertGames(db, accessToken.AccessToken, clientID)
 	if err != nil {
 		log.Fatal("Failed to fetch and insert games: ", err)
@@ -164,5 +169,19 @@ func fetchAndInsertGames(db *sqlx.DB, accessToken string, clientID string) error
 		}
 	}
 
+	return nil
+}
+
+func initSchema(db *sqlx.DB) error {
+	schema, err := os.ReadFile("init-db.sql")
+	if err != nil {
+		return fmt.Errorf("failed to read init-db.sql: %v", err)
+	}
+
+	_, err = db.Exec(string(schema))
+	if err != nil {
+		return fmt.Errorf("failed to execute schema: %v", err)
+	}
+	log.Println("Database schema initialized successfully")
 	return nil
 }
