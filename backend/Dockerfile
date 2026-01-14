@@ -16,5 +16,7 @@ RUN apk add --no-cache ca-certificates
 WORKDIR /root
 COPY --from=builder /app/main .
 COPY --from=builder /app/populate .
+COPY --from=builder /app/init-db.sql .
+COPY --from=builder /app/data ./data
 EXPOSE 8080
-CMD ["sh", "-c", "./populate; ./main"]
+CMD ["sh", "-c", "./populate && ./main"]
