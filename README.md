@@ -31,6 +31,9 @@ docker compose up --build
 ```
 Access the frontend at: [http://localhost:3000](http://localhost:3000)
 
+> [!NOTE]
+> If you've just pulled changes, remember to run `npm install` in the `frontend` directory to clean up unused dependencies.
+
 ---
 
 ## 🏗️ Backend Architecture
@@ -64,11 +67,17 @@ Deploying to Render requires three separate services working together:
 - **Initial Data Population**: **Automatic!** I've configured the container to run the seeder script every time it starts up. This works perfectly on Render's **Free Tier** without needing paid shell access.
 - **Database Reset (Free)**: If you want to wipe the database and start fresh, add the environment variable `TRUNCATE_DB=true` in Render. Re-deploy, wait for it to finish, and then **remove** the variable (to prevent wiping on every subsequent restart).
 
-### 3. Frontend (Static Site)
+### 3. Frontend (Web Service / Static)
+- **Runtime**: Docker (using the provided `frontend/Dockerfile`)
 - **Build Command**: `npm run build`
 - **Publish Directory**: `dist`
-- **Environment Variables**:
-  - `VITE_API_URL`: The URL of your Render backend service.
+- **Build Arguments**:
+  - `VITE_API_URL`: The URL of your Render backend service. This **must** be passed during the build process because Vite injects it into the bundle.
+
+#### Local Docker Build Example:
+```bash
+docker build -t eneba-frontend --build-arg VITE_API_URL=http://localhost:8080 ./frontend
+```
 
 ---
 
