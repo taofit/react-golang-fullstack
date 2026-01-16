@@ -137,5 +137,166 @@
     "Path of Exile": [
         "PoE",
         "Path of Exile"
+    ],
+    "Team Fortress 2": [
+        "TF2"
+    ],
+    "Left 4 Dead 2": [
+        "L4D2"
+    ],
+    "Hollow Knight": [
+        "HK"
+    ],
+    "Dark Souls III": [
+        "DS3",
+        "Dark Souls 3"
+    ],
+    "Resident Evil 4": [
+        "RE4"
+    ],
+    "Final Fantasy VII Remake": [
+        "FF7",
+        "FF7R"
+    ],
+    "Monster Hunter: World": [
+        "MHW",
+        "Monster Hunter World"
+    ],
+    "Persona 5 Royal": [
+        "P5R",
+        "Persona 5"
+    ],
+    "Street Fighter 6": [
+        "SF6"
+    ],
+    "Diablo IV": [
+        "D4",
+        "Diablo 4"
+    ],
+    "Counter-Strike: Global Offensive": [
+        "CSGO",
+        "CS:GO"
+    ],
+    "PAYDAY 2": [
+        "PD2"
+    ],
+    "Garry's Mod": [
+        "GMod"
+    ],
+    "Sid Meier's Civilization VI": [
+        "Civ 6",
+        "Civ VI"
+    ],
+    "Borderlands 2": [
+        "BL2"
+    ],
+    "Monster Hunter Rise": [
+        "MHR"
+    ],
+    "Honkai: Star Rail": [
+        "HSR"
+    ],
+    "Madden NFL 24": [
+        "Madden"
+    ],
+    "EA SPORTS FC 24": [
+        "FC 24",
+        "FIFA 24",
+        "FIFA"
+    ],
+    "NBA 2K24": [
+        "2K24",
+        "2K"
+    ],
+    "Mortal Kombat 1": [
+        "MK1"
+    ],
+    "Tekken 8": [
+        "T8"
+    ],
+    "Gran Turismo 7": [
+        "GT7"
+    ],
+    "Forza Horizon 5": [
+        "FH5"
+    ],
+    "No Man's Sky": [
+        "NMS"
+    ],
+    "Hogwarts Legacy": [
+        "HL",
+        "Hogwarts"
+    ],
+    "Star Wars Jedi: Survivor": [
+        "Jedi Survivor"
+    ],
+    "The Last of Us Part I": [
+        "TLOU",
+        "TLOU1"
+    ],
+    "The Last of Us Part II": [
+        "TLOU2"
+    ],
+    "Marvel's Spider-Man Remastered": [
+        "Spider-Man",
+        "Spiderman"
+    ],
+    "Marvel's Spider-Man: Miles Morales": [
+        "Miles Morales"
+    ],
+    "Horizon Zero Dawn": [
+        "HZD"
+    ],
+    "Horizon Forbidden West": [
+        "HFW"
+    ],
+    "Ghost of Tsushima": [
+        "GoT"
+    ],
+    "Bloodborne": [
+        "BB"
+    ],
+    "Sekiro: Shadows Die Twice": [
+        "Sekiro"
+    ],
+    "Devil May Cry 5": [
+        "DMC5"
+    ],
+    "Resident Evil Village": [
+        "RE8",
+        "RE Village",
+        "Village"
+    ],
+    "Phasmophobia": [
+        "Phasmo"
+    ],
+    "Deep Rock Galactic": [
+        "DRG"
+    ],
+    "Valheim": [
+        "Valheim"
+    ],
+    "RimWorld": [
+        "RimWorld"
+    ],
+    "Factorio": [
+        "Factorio"
+    ],
+    "Subnautica": [
+        "Subnautica"
+    ],
+    "Escape from Tarkov": [
+        "Tarkov",
+        "EFT"
+    ],
+    "DayZ": [
+        "DayZ"
+    ],
+    "Warframe": [
+        "Warframe"
+    ],
+    "Final Fantasy XIV": [
+        "FFXIV",
+        "FF14"
     ]
 }

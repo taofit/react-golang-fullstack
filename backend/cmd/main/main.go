@@ -1,8 +1,8 @@
 package main
 
 import (
-	"backend/internal/db"
 	"backend/internal/handlers"
+	"backend/internal/repository"
 	"log"
 	"os"
 
@@ -17,7 +17,7 @@ func main() {
 	if dbURL == "" {
 		log.Fatal("DATABASE_URL is not set")
 	}
-	if err := db.Init(dbURL); err != nil {
+	if err := repository.Init(dbURL); err != nil {
 		log.Fatal("DB connection failed: ", err)
 	}
 
