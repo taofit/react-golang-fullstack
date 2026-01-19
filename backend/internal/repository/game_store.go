@@ -22,10 +22,10 @@ func ListGames(page, limit int, search string) ([]models.Game, int, error) {
 		query = `
 		SELECT id, name, summary, cover_url, price_usd
 		FROM games 
-		WHERE name % $1 AND similarity(name, $1) > 0.4 
+		WHERE similarity(name, $1) > 0.1 
 		ORDER BY similarity(name, $1) DESC
 		LIMIT $2 OFFSET $3`
-		countQuery = `SELECT COUNT(*) FROM games WHERE name % $1 AND similarity(name, $1) > 0.4`
+		countQuery = `SELECT COUNT(*) FROM games WHERE similarity(name, $1) > 0.1`
 		queryArgs = []interface{}{search, limit, offset}
 		getArgs = []interface{}{search}
 	} else {
@@ -63,12 +63,12 @@ func GetGameSuggestions(query string) ([]string, error) {
 		SELECT name
 		FROM games
 		LEFT JOIN game_synonyms ON games.id = game_synonyms.game_id
-		WHERE (name % $1 AND similarity(name, $1) > 0.3) 
-		OR (synonym % $1 AND similarity(synonym, $1) > 0.3)
+		WHERE (similarity(name, $1) > 0.1) 
+		OR (similarity(synonym, $1) > 0.1)
 		GROUP BY name
 		ORDER BY MAX(GREATEST(
-			CASE WHEN name % $1 THEN similarity(name, $1) ELSE 0 END,
-			CASE WHEN synonym % $1 THEN similarity(synonym, $1) ELSE 0 END
+			similarity(name, $1),
+			similarity(synonym, $1)
 		)) DESC
 		LIMIT 10`, query)
 

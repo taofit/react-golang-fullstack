@@ -99,50 +99,57 @@ func getIGDBAccessToken(clientID string, clientSecret string) (AccessToken, erro
 func fetchAndInsertGames(db *sqlx.DB, accessToken string, clientID string) error {
 	apiURL := "https://api.igdb.com/v4/games"
 
-	// IGDB v4 expects a text-based query body
-	query := "fields name, summary, cover.url, cover.image_id; sort total_rating_count desc; limit 100;"
-
-	req, err := http.NewRequest("POST", apiURL, strings.NewReader(query))
-	if err != nil {
-		return err
+	// Define multiple queries to run
+	queries := []string{
+		"fields name, summary, cover.url, cover.image_id; sort total_rating_count desc; limit 100;",                        // Popular games
+		"fields name, summary, cover.url, cover.image_id; sort total_rating_count desc; limit 50; where name ~ \"FIFA\"*;", // FIFA games
 	}
-
-	req.Header.Set("Client-ID", clientID)
-	req.Header.Set("Authorization", "Bearer "+accessToken)
-	req.Header.Set("Content-Type", "text/plain")
 
 	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("IGDB API error (status %d): %s", resp.StatusCode, string(body))
-	}
+	for _, query := range queries {
+		req, err := http.NewRequest("POST", apiURL, strings.NewReader(query))
+		if err != nil {
+			return err
+		}
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
+		req.Header.Set("Client-ID", clientID)
+		req.Header.Set("Authorization", "Bearer "+accessToken)
+		req.Header.Set("Content-Type", "text/plain")
 
-	var games []IGDBGame
-	if err := json.Unmarshal(body, &games); err != nil {
-		return fmt.Errorf("failed to unmarshal games: %v", err)
-	}
+		resp, err := client.Do(req)
+		if err != nil {
+			return err
+		}
+		defer resp.Body.Close()
 
-	// Load synonyms from JSON
-	synonymsFile, err := os.Open("data/synonyms.json")
-	if err != nil {
-		log.Printf("Warning: could not open synonyms.json: %v", err)
-	} else {
-		defer synonymsFile.Close()
+		if resp.StatusCode != http.StatusOK {
+			body, _ := io.ReadAll(resp.Body)
+			return fmt.Errorf("IGDB API error (status %d): %s", resp.StatusCode, string(body))
+		}
+
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return err
+		}
+
+		var games []IGDBGame
+		if err := json.Unmarshal(body, &games); err != nil {
+			return fmt.Errorf("failed to unmarshal games: %v", err)
+		}
+
+		// Load synonyms from JSON
+		synonymsFile, err := os.Open("data/synonyms.json")
 		var synonymsMap map[string][]string
-		json.NewDecoder(synonymsFile).Decode(&synonymsMap)
+		if err != nil {
+			log.Printf("Warning: could not open synonyms.json: %v", err)
+		} else {
+			defer synonymsFile.Close()
+			json.NewDecoder(synonymsFile).Decode(&synonymsMap)
+		}
 
 		for _, game := range games {
+			// Randomize price for demo purposes
 			game.PriceUsd = 9.99 + rand.Float64()*(59.99-9.99)
 
 			if strings.HasPrefix(game.Cover.URL, "//") {
@@ -170,11 +177,13 @@ func fetchAndInsertGames(db *sqlx.DB, accessToken string, clientID string) error
 			}
 
 			// Insert synonyms if any
-			if syns, ok := synonymsMap[game.Name]; ok {
-				for _, syn := range syns {
-					_, err := db.Exec("INSERT INTO game_synonyms (game_id, synonym) VALUES ($1, $2) ON CONFLICT(game_id, synonym) DO NOTHING", gameID, syn)
-					if err != nil {
-						log.Printf("Failed to insert synonym %s for game %s: %v", syn, game.Name, err)
+			if synonymsMap != nil {
+				if syns, ok := synonymsMap[game.Name]; ok {
+					for _, syn := range syns {
+						_, err := db.Exec("INSERT INTO game_synonyms (game_id, synonym) VALUES ($1, $2) ON CONFLICT(game_id, synonym) DO NOTHING", gameID, syn)
+						if err != nil {
+							log.Printf("Failed to insert synonym %s for game %s: %v", syn, game.Name, err)
+						}
 					}
 				}
 			}
