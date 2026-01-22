@@ -53,3 +53,7 @@ func Autocomplete(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, suggestions)
 }
+
+func HealthCheck(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+}

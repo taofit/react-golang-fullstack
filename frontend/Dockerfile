@@ -20,10 +20,16 @@ COPY . .
 
 RUN npm run build
 
-# Stage 2: Serve with lightweight nginx (production-ready)
+# Stage 2: Serve with Nginx
 FROM nginx:alpine
 
-# Copy the built app from the builder stage
+# Remove the default Nginx config
+RUN rm /etc/nginx/conf.d/default.conf
+
+# Copy your custom config
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Copy the built app
 COPY --from=builder /app/dist /usr/share/nginx/html
 
 EXPOSE 80

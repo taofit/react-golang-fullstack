@@ -1,6 +1,7 @@
 package main
 
 import (
+	"backend/cmd/seed"
 	"backend/internal/handlers"
 	"backend/internal/repository"
 	"log"
@@ -13,13 +14,10 @@ import (
 func main() {
 	godotenv.Load()
 
-	dbURL := os.Getenv("DATABASE_URL")
-	if dbURL == "" {
-		log.Fatal("DATABASE_URL is not set")
-	}
-	if err := repository.Init(dbURL); err != nil {
+	if _, err := repository.Init(); err != nil {
 		log.Fatal("DB connection failed: ", err)
 	}
+	seed.RunSeeder()
 
 	r := gin.Default()
 	r.Use(func(c *gin.Context) {
@@ -34,6 +32,8 @@ func main() {
 		}
 		c.Next()
 	})
+
+	r.GET("/health", handlers.HealthCheck)
 
 	r.GET("/api/list", handlers.ListGames)
 	r.GET("/list", handlers.ListGames)

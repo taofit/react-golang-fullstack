@@ -11,6 +11,7 @@ services:
       - ./backend/.env
     environment:
       - DATABASE_URL=postgres://postgres:secret@db:5432/games?sslmode=disable
+      - RUN_SEEDER=true # Set to true to run seeder on startup # or if it is set to false, then run this command on host computer: RUN_SEEDER=true docker-compose up backend
     depends_on:
       db:
         condition: service_healthy

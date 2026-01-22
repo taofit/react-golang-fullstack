@@ -1,6 +1,7 @@
 package main
 
 import (
+	"backend/internal/repository"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -31,18 +32,17 @@ type IGDBGame struct {
 type AccessToken struct {
 	AccessToken string `json:"access_token"`
 }
+type CREDS struct {
+	IGDB_CLIENT_ID     string `json:"IGDB_CLIENT_ID"`
+	IGDB_CLIENT_SECRET string `json:"IGDB_CLIENT_SECRET"`
+}
 
 func main() {
 	godotenv.Load()
 	rand.Seed(time.Now().UnixNano())
-	clientID := os.Getenv("IGDB_CLIENT_ID")
-	clientSecret := os.Getenv("IGDB_CLIENT_SECRET")
-	dbURL := os.Getenv("DATABASE_URL")
+	clientID, clientSecret := getIGDBCreds()
 
-	if clientID == "" || clientSecret == "" || dbURL == "" {
-		log.Fatal("Missing env variables:IGDB_CLIENT_ID, IGDB_CLIENT_SECRET, and DATABASE_URL")
-	}
-	db, err := sqlx.Open("postgres", dbURL)
+	db, err := repository.Init()
 	if err != nil {
 		log.Fatal("DB connection failed: ", err)
 	}
@@ -71,6 +71,38 @@ func main() {
 		log.Fatal("Failed to fetch and insert games: ", err)
 	}
 	log.Println("Successfully fetched and inserted games")
+}
+
+func getIGDBCreds() (string, string) {
+    igdbJSON := os.Getenv("IGDB_CREDS")
+    var clientID string
+    var clientSecret string
+
+    // FIX: Check if igdbJSON is NOT empty
+    if igdbJSON != "" {
+        var creds CREDS
+        if err := json.Unmarshal([]byte(igdbJSON), &creds); err != nil {
+            // Log the error so you know if JSON parsing failed
+            log.Printf("⚠️ Warning: Failed to parse IGDB_CREDS JSON: %v", err)
+        } else {
+            clientID = creds.IGDB_CLIENT_ID
+            clientSecret = creds.IGDB_CLIENT_SECRET
+        }
+    }
+
+    // Fallback: If JSON parsing didn't happen or failed, check direct env vars (for Local/Render)
+    if clientID == "" {
+        clientID = os.Getenv("IGDB_CLIENT_ID")
+    }
+    if clientSecret == "" {
+        clientSecret = os.Getenv("IGDB_CLIENT_SECRET")
+    }
+
+    if clientID == "" || clientSecret == "" {
+        log.Fatal("❌ Missing env variables: IGDB_CLIENT_ID, IGDB_CLIENT_SECRET")
+    }
+    
+    return clientID, clientSecret
 }
 
 func getIGDBAccessToken(clientID string, clientSecret string) (AccessToken, error) {

@@ -1,0 +1,36 @@
+# The manifest for the "frontend" service.
+# Read the full specification for the "Static Site" type at:
+# https://aws.github.io/copilot-cli/docs/manifest/static-site/
+
+# Your service name will be used in naming your resources like S3 buckets, etc.
+name: frontend
+type: Load Balanced Web Service
+
+# Add this section to force the correct architecture
+platform: linux/x86_64
+
+count:
+  spot: 1
+
+image:
+  build:
+    dockerfile: frontend/Dockerfile
+    args:
+      VITE_API_URL: ${VITE_API_URL}
+  port: 80 
+
+http:
+  path: '/'
+  # Optional: helps speed up deployment if Nginx is ready immediately
+  healthcheck: '/'
+# You can override any of the values defined above by environment.
+# environments:
+#   test:
+#     files:
+#       - source: './blob'
+#         recursive: true
+#         destination: 'assets'
+#         exclude: '*'
+#         reinclude:
+#           - '*.txt'
+#           - '*.png'

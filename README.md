@@ -23,8 +23,8 @@ PORT=8080
 
 ### 3. Run the App
 ```bash
-# First time setup: Populate the database
-docker compose run --rm populate-igdb
+# First time setup: Seed the data (Manually):
+docker compose --profile tools run --rm populate-igdb
 
 # Start the application
 docker compose up --build
@@ -79,7 +79,27 @@ Deploying to Render requires three separate services working together:
 docker build -t eneba-frontend --build-arg VITE_API_URL=http://localhost:8080 ./frontend
 ```
 
----
+## 📚 Deployment to AWS
+
+- Please refer to [README_DEPLOY_AWS.md](README_DEPLOY_AWS.md)
+
+## ⚡ Quick Commands (Makefile)
+
+This project uses a `Makefile` to simplify common tasks.
+- **Local Dev:** `make dev`
+- **AWS Deploy (Backend):** `make deploy-api`
+- **AWS Deploy (Frontend):** `make deploy-frontend` (Automatically links to Backend URL)
+- **AWS Seed Data:** `make seed`
+- **Full Production Push:** `make deploy-all`
+
+|Command|What it does|
+|---|---|
+|make dev|Starts your local docker-compose environment.|
+|make deploy-api|Deploys your Go backend to AWS.|
+|make deploy-frontend|Automated: Finds the API URL and deploys the React/Vite app.|
+|make seed|Runs the IGDB population task on AWS.|
+|make deploy-all|Runs the entire AWS pipeline (API → Frontend → Seeding).|
+
 
 ## 🛠️ Key Commands
 - `docker compose run --rm populate-igdb`: Local setup for fetching and inserting game data.
