@@ -3,6 +3,7 @@ package main
 import (
 	"backend/cmd/seed"
 	"backend/internal/handlers"
+	"backend/internal/middleware"
 	"backend/internal/repository"
 	"log"
 	"os"
@@ -19,19 +20,10 @@ func main() {
 	}
 	seed.RunSeeder()
 
-	r := gin.Default()
-	r.Use(func(c *gin.Context) {
-		c.Header("Content-Type", "application/json")
-		c.Header("Access-Control-Allow-Origin", "*")
-		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, X-Auth-Token")
-		c.Header("Access-Control-Allow-Credentials", "true")
-		if c.Request.Method == "OPTIONS" {
-			c.AbortWithStatus(204)
-			return
-		}
-		c.Next()
-	})
+	r := gin.New()
+	r.Use(middleware.Logger())
+	r.Use(middleware.CORS())
+	r.Use(middleware.RateLimit(5, 10))
 
 	r.GET("/health", handlers.HealthCheck)
 
@@ -44,6 +36,21 @@ func main() {
 
 	r.GET("/api/autocomplete", handlers.Autocomplete)
 	r.GET("/autocomplete", handlers.Autocomplete)
+
+	// Auth routes
+	r.POST("/api/login", handlers.Login)
+	r.POST("/api/register", handlers.Register)
+
+	// Example of using real JWTAuth middleware for a specific route
+	r.GET("/secure-ping", middleware.JWTAuth(), func(c *gin.Context) {
+		userId := c.MustGet("user_id")
+		username := c.MustGet("username")
+		c.JSON(200, gin.H{
+			"message":  "pong",
+			"user_id":  userId,
+			"username": username,
+		})
+	})
 
 	port := os.Getenv("PORT")
 	if port == "" {

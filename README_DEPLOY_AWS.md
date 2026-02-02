@@ -1,201 +1,161 @@
 # 🚀 AWS Copilot Deployment Guide
 
-This document outlines the end-to-end process for deploying the Game Catalog application (Backend, Frontend, and Aurora Database) to AWS using the Copilot CLI.
-
-## 📋 Prerequisites
-
-- **AWS CLI** configured with `aws configure`.
-- **AWS Copilot CLI** installed.
-- **Docker Desktop** running.
+This document provides a clean, step-by-step workflow for deploying the **Game Catalog** application (Go Backend, React Frontend, and Aurora PostgreSQL) to AWS.
 
 ---
 
-## 🛠 1. Project Initialization
+## 📋 1. Prerequisites
 
-First, verify that your project is initialized as an application.
+Before starting, ensure you have the following configured:
 
+- [x] **AWS CLI**: Configured via `aws configure`.
+- [x] **AWS Copilot CLI**: [Installation Guide](https://aws.github.io/copilot-cli/docs/getting-started/install/).
+- [x] **Docker Desktop**: Must be running for builds.
+- [ ] **IAM Permissions**: Your AWS user/role needs permissions for CloudFormation, ECS, RDS, and Secrets Manager.
+
+---
+
+## 🛠 2. Initial Setup (One-Time)
+
+### A. Initialize Application
+This creates the logical application container in AWS.
 ```bash
-# Initialize the application
 copilot app init game-catalog
 ```
 
----
-
-## 🗄 2. Infrastructure Setup
-
-### A. Database (Aurora Serverless)
-Create the database storage which will be accessible by your services.(if mydb.yml is already in the copilot/api/addons/ directory, you can skip this step)
-
+### B. Setup Database (Aurora Serverless)
+Creates the storage resource accessible by your services.
 ```bash
-# Create the database storage
-copilot storage init \                                                                                
+# This creates a CloudFormation template in 'copilot/api/addons/'
+copilot storage init \
   -n mydbAurora \
   -t Aurora \
   --engine PostgreSQL \
   --lifecycle environment \
   --workload api
 ```
-*   **Result:** Creates a CloudFormation template in `copilot/api/addons/`.
-*   **Secret:** AWS automatically creates a secret in Secrets Manager containing the DB connection details.
+> [!NOTE]
+> If `mydb.yml` already exists in your `addons/` directory, you can skip this step.
 
-### B. Secret Management (IGDB Credentials)
-Store your IGDB API keys securely using SSM Parameter Store.
-
+### C. Setup External Secrets (IGDB)
+Initialize your API keys securely in AWS SSM Parameter Store.
 ```bash
-# Initialize the IGDB secret bundle
 copilot secret init --name IGDB_CREDS
 ```
-**Prompt:** When asked for the value, enter a JSON string with your credentials:
+**Value format:** Enter a JSON string when prompted:
 ```json
-{"IGDB_CLIENT_ID": "your_client_id", "IGDB_CLIENT_SECRET": "your_client_secret"}
+{"IGDB_CLIENT_ID": "...", "IGDB_CLIENT_SECRET": "..."}
 ```
 
 ---
 
-## 🚢 3. Service Deployment
+## 🚢 3. Service Configuration & Deployment
 
-### A. Initialize the API Service
-Define the Backend service type and Dockerfile location.
-
+### Step 1: Initialize Services
+Register your backend and frontend services.
 ```bash
+# Register Backend
 copilot svc init --name api --svc-type "Load Balanced Web Service" --dockerfile ./backend/Dockerfile
+
+# Register Frontend
+copilot svc init --name frontend --svc-type "Load Balanced Web Service" --dockerfile ./frontend/Dockerfile
 ```
 
-**Configuration Check:** Ensure `copilot/api/manifest.yml` includes the following secrets configuration:
+### Step 2: Configure Secrets in Manifest
+Ensure `copilot/api/manifest.yml` includes the following mapping so your code can access the DB and IGDB keys:
 
 ```yaml
 secrets:
-  # Pulls the DB ARN from the CloudFormation Output
+  # Pulls the Aurora Secret ARN from CloudFormation outputs
   DB_SECRET: 
     from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-mydbAuroraSecret
   
-  # Pulls the JSON bundle from SSM
+  # Pulls the JSON bundle from SSM Parameter Store
   IGDB_CREDS: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/IGDB_CREDS
 ```
 
-### B. Deploy the Environment & Services
-Create the environment (VPC, Cluster) and deploy the services.
-
+### Step 3: Deploy Everything
+Create the network environment and push your code.
 ```bash
-# 1. Create the 'test' environment
+# 1. Initialize & Deploy the 'test' environment (VPC, Cluster, DB)
 copilot env init --name test --profile default --app game-catalog
-
-
-# 2. Deploy the environment resources (Database, Network)
 copilot env deploy --name test
 
-# 3. Deploy the API service
+# 2. Deploy Services
 copilot svc deploy --name api --env test
-
-# 4. Register the Frontend
-copilot svc init --name frontend --svc-type "Load Balanced Web Service" --dockerfile ./frontend/Dockerfile
+copilot svc deploy --name frontend --env test --env-vars VITE_API_URL=$(make get-api-url)
 ```
+> [!TIP]
+> Use the `Makefile` to simplify fetching the dynamic API URL for the frontend build.
 
 ---
 
 ## 🌱 4. Database Seeding
 
-The database seeder is designed to run as a **One-Off Task** to avoid running indefinitely. We use a `Makefile` to simplify fetching the dynamic AWS secrets required for this task.
-
-### Run the Seeder via Makefile (Recommended)
+The seeder runs as a **One-Off Task**. It is recommended to use the `Makefile` to handle the complex secret ARNs automatically.
 
 ```bash
+# Recommended
 make seed
 ```
 
-### Manual Command (Under the hood)
-If you need to run it manually without the Makefile:
+<details>
+<summary>View Manual Command (Alternative)</summary>
 
 ```bash
-# 1. Get the DB Secret ARN
+# 1. Get Secret ARN
 DB_ARN=$(aws secretsmanager list-secrets --query "SecretList[?contains(Name, 'mydbAuroraSecret')].ARN" --output text | head -n 1)
 
-# 2. Run the task
+# 2. Run Task
 copilot task run \
-  --app game-catalog \
-  --env test \
-  -n db-seeder \
-  --dockerfile ./backend/Dockerfile \
-  --build-context ./backend \
+  --app game-catalog --env test -n db-seeder \
+  --dockerfile ./backend/Dockerfile --build-context ./backend \
   --env-vars RUN_SEEDER=true \
   --secrets DB_SECRET=$DB_ARN,IGDB_CREDS=/copilot/game-catalog/test/secrets/IGDB_CREDS \
   --follow
 ```
+</details>
 
 ---
 
-## 🔍 5. Operational Monitoring
+## 🔍 5. Operations & Monitoring
 
-Once deployed, use these commands to verify everything is healthy.
-
-| Command | Purpose |
+### Vital Commands
+| Command | Result |
 | :--- | :--- |
-| `copilot svc status` | Check if your API is "Running" or "Failing". |
-| `copilot svc logs` | View the Go application logs (check for DB connection success). |
-| `copilot svc show` | Get the public URL of your API. |
+| `copilot svc show` | Get public URLs and service metadata. |
+| `copilot svc status` | Check if containers are healthy/running. |
+| `copilot svc logs` | Tail application logs (Real-time). |
+| `copilot svc exec` | Interactive shell inside your container. |
+
+### Accessing the Web UI
+- **Frontend URL**: `copilot svc show --name frontend`
+- **Quick Open**: `copilot svc show --name frontend --web`
 
 ---
 
-## 🏁 Summary Checklist
+## 🧹 6. Cleanup & Reset
 
-- [ ] **Code**: Ensure Go code can parse `IGDB_CREDS` as JSON.
-- [ ] **Storage**: Run `copilot storage init` (Creates the DB).
-- [ ] **Secrets**: Run `copilot secret init` (Creates IGDB keys).
-- [ ] **Manifest**: Map `DB_SECRET` and `IGDB_CREDS` in `manifest.yml`.
-- [ ] **Deploy**: Run `copilot svc deploy`.
-- [ ] **Seed**: Run `make seed`.
-
-# Restart process after running `copilot app delete`
-##  1. Initialize the Application
-This re-registers the game-catalog name in your AWS account.
-
-```Bash
-copilot app init game-catalog
+### Clean Slate
+If you need to delete everything and start over:
+```bash
+# Delete all AWS resources and local metadata
+copilot app delete --yes
 ```
-## 2. Deploy the Environment (The Heavy Lifter)
-This step builds the network (VPC), the ECS Cluster, and importantly, it detects your copilot/environments/addons/mydb.yml file and builds the Aurora database.
 
-```Bash
-copilot env init --name test --profile default --default-config
-
-copilot env deploy --name test
-
-Wait Time: This will take about 10–12 minutes because of the RDS cluster creation.
+### Environment Only
+If you want to keep your manifests but wipe the AWS "test" resources (VPC, DB, ECS):
+```bash
+copilot env delete --name test --yes
 ```
-## 3. Re-register Services (Mapping Metadata)
-Since `copilot app delete` wiped the remote metadata, you must tell AWS that your local services exist. These commands will detect your existing manifests and skip creating new ones.
 
-```Bash
-copilot svc init --name api --svc-type "Load Balanced Web Service" --dockerfile ./backend/Dockerfile
+---
 
-copilot svc init --name frontend --svc-type "Load Balanced Web Service" --dockerfile ./frontend/Dockerfile
-```
-## 4. Setup Secrets
-Re-add your external credentials into AWS Secrets Manager.
+## 🔄 7. Restarting after `app delete`
 
-```Bash
-copilot secret init --name IGDB_CREDS
-```
-## 5. Final Deployment & Seeding
-Now that the "handshake" between your local files and AWS is complete, use your Makefile to push the code and populate the database.
+If you have already deleted the app and want to re-deploy:
 
-```Bash
-make deploy-all
-```
-## 6. to check URLs for project
-
-- user facing website:
-```Bash
-
-copilot svc show --name frontend
-
-Look for the Routes section in the output. It will look something like: http://game-Publi-XXXXXXXXX.us-east-1.elb.amazonaws.com
-```
-- backend service
-```Bash
-copilot svc show --name api
-```
-- Open it directly in your Browser
-```Bash
-copilot svc show --name frontend --web
-```
+1. **Re-initialize**: `copilot app init game-catalog`
+2. **Setup DB/Secrets**: (See Section 2 - Storage and Secret Init marks your local files as "remote-tracking")
+3. **Re-deploy Env**: `copilot env init` (with `--default-config`) then `copilot env deploy`
+4. **Final Sync**: `make deploy-all`
